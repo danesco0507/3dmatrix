@@ -36,7 +36,6 @@ class MatrixController extends Controller
 
     public function processData(Request $request){
     	unset($this->result);
-	unset($this->errors);
     	$this->validate($request, [
             'data' => 'required',
     	]);
@@ -98,7 +97,7 @@ class MatrixController extends Controller
 	    }
 
         }
-	if(sizeof($this->errors)){
+	if(count($this->errors)){
 	    return redirect('/')->withErrors($this->errors);
 	}
 	else{
