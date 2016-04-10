@@ -11,6 +11,6 @@
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
-});
+
+Route::get('/', 'MatrixController@index');
+Route::post('/data', 'MatrixController@processData');
