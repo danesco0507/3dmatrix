@@ -14,12 +14,14 @@ class MatrixController extends Controller
     var $testCases;
     var $n_size;
     var $case_size;
+    var $errors;
 
     public function __construct()
     {
         $this->matrix = array();
         $this->result = array();
-        $this->testCases = 0;
+        $this->errors = array();
+	$this->testCases = 0;
         $this->n_size = 0;
         $this->case_size = 0;
     }
@@ -33,8 +35,8 @@ class MatrixController extends Controller
     
 
     public function processData(Request $request){
-    	$this->result = array();
-
+    	unset($this->result);
+	unset($this->errors);
     	$this->validate($request, [
             'data' => 'required',
     	]);
@@ -49,7 +51,10 @@ class MatrixController extends Controller
 
             if( $iter == 0){
             	$this->testCases = intval($line);
-            }
+		if ($this->testCases > 50 || $this->testCases < 1){
+			$this->returnWithError("El numero de casos no es valido");
+            	}
+	    }
 	    if( $iter > $this->case_size){
                 $iter = -1;
             }
@@ -58,7 +63,15 @@ class MatrixController extends Controller
                     $case = explode(" ",$line);
                     $this->n_size = intval($case[0]);
                     $this->case_size = intval($case[1]);
-//                    $this->result[] = "nuevo caso {$this->n_size} {$this->case_size}";
+		    
+		    if ($this->n_size > 100 || $this->n_size < 1){
+                        $this->returnWithError("El tamaño de la matriz no es valido");
+                    }
+
+		    if ($this->case_size > 1000 || $this->case_size < 1){
+                        $this->returnWithError("El numero de operaciones no es valido");
+                    }
+
 		    if($this->case_size>0 && $this->n_size>0){
                     	$this->initializeMatrix($this->n_size);
 			$iter = 1;
@@ -68,13 +81,14 @@ class MatrixController extends Controller
 
 
             if($iter <= $this->case_size  and $iter>0 ){
-// $this->result[] = "iteracion {$iter} de {$this->case_size}";
                 $values = explode(" ",$line);
                 if(strcmp($values[0],"UPDATE") == 0){
+		    $this->validateUpdate(intval($values[1]),intval($values[2]),intval($values[3]),intval($values[4]));
                     $this->update(intval($values[1]),intval($values[2]),intval($values[3]),intval($values[4]));
                     $iter++;
 		}
                 elseif(strcmp($values[0],"QUERY") == 0){
+		    $this->validateQuery(intval($values[1]),intval($values[2]),intval($values[3]),intval($values[4]),intval($values[5]),intval($values[6]));
                     $this->result[] = $this->sum(intval($values[1]),intval($values[2]),intval($values[3]),intval($values[4]),intval($values[5]),intval($values[6]));
                     $iter++;
 		}
@@ -84,11 +98,14 @@ class MatrixController extends Controller
 	    }
 
         }
-        return view('basicform', [
+	if(sizeof($this->errors)){
+	    return redirect('/')->withErrors($this->errors);
+	}
+	else{
+            return view('basicform', [
                 'results' => $this->result,
-        ]);
-
-        //return redirect('/');
+            ]);
+	}
     }
 
     private function initializeMatrix($N){
@@ -116,5 +133,25 @@ class MatrixController extends Controller
 
     private function update($x1,$y1,$z1,$value){
         $this->matrix["{$x1},{$y1},{$z1}"]=$value;
+    }
+
+    private function returnWithError($message){
+	$this->errors[] = $message;
+    }
+
+    private function validateQuery($x1,$y1,$z1,$x2,$y2,$z2){
+        if($x1>$x2 ||$y1>$y2 ||$z1>$z2 || $x1>$this->n_size || $x1<1 ||$y1>$this->n_size || $y1<1 || $z1>$this->n_size || $z1<1 || $x2>$this->n_size || $x2<1 || $y2>$this->n_size || $y2<1 || $z2>$this->n_size || $z2<1 ){
+	    returnWithError("Los vectores ({$x1},{$y1},{$z1}) y ({$x2},{$y2},{$z2}) no tienen el formato correcto");
+	}
+    }
+    
+    private function validateUpdate($x1,$y1,$z1, $value){
+	if($x1>$this->n_size || $x1<1 ||$y1>$this->n_size || $y1<1 || $z1>$this->n_size || $z1<1){
+	   returnWithError("El vector ({$x1},{$y1},{$z1}) no tiene el formato correcto");
+	}
+
+	if($value > pow(10,9) || $value < pow(10,-9)){
+	   returnWithError("El valor a asignar no es valido");
+	}
     }
 }
