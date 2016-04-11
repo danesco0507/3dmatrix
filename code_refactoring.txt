@@ -1,0 +1,63 @@
+
+
+    /*
+     * Dado un servicio y un conductor, se asigna el conductor al servicio y se informa al usuario de
+     * la aceptación del mismo por push. Los datos se reciben por POST. Los posibles resultados son
+     * códigos de error o el resultado de enviar la notificación al usuario.
+     */
+    public function post_confirm(){
+        //Obtiene los parametros del request
+        $serviceId = Input::get('service_id');
+        $driverId = Input::get('driver_id');
+
+        //Busca los registros en la base de datos
+        $servicio = Service::find($serviceId);
+        $driver = Driver::find(Input::get('driver_id'));
+
+        //Verifica si los registros existen
+        if($servicio != NULL && $driver != NULL){
+
+            //Verigfica si el estatus del servicio es '6', de serlo presenta un error
+            if($servicio->status_id == '6'){
+                return Response::json(array('error' => '2'));
+            }
+            // Verifica si el servicio no tiene un conductor asociado y si el estatus es '1'
+            elseif($servicio->driver_id == NULL && $servicio->status_id == '1'){
+                //Actualiza el servicio asignandole el conductor, el status y el carro del conductor
+                $servicio = Service::update($serviceId, array(
+                    'driver_id' => $driverId,
+                    'status_id' => '2',
+                    'car_id' => $driver->car_id
+                ));
+                // Actualiza el estado del conductor para indicar que está ocupado
+                Driver::update(Input::get('driver_id'), array(
+                    'available' => '0'
+                ));
+
+                //Proceso de notificación push al usuario
+                $pushMessage = 'Tu servicio ha sido confirmado';
+
+                //Verifica si el servicio tiene la informaciòn del usuario, si no entonces retorna un error
+                $push = Push::make();
+                if($servicio->user->uuid == ''){
+                    return Response::json(array('error' => '0'));
+                }
+
+                //Envía la notidicación push al usuario dependiendo del dispositivo que tiene
+                if($servicio->user->type == '1'){
+                    $result = $push->ios($servicio->user->uuid, $pushMessage, 1, 'honk.wav', 'Open', array('serviceId' => $servicio->id));
+                }
+                else{
+                    $result = $push->android2($servicio->user->uuid, $pushMessage, 1, 'default', 'Open', array('serviceId' => $servicio->id));
+                }
+                return $result;
+            }
+            else{
+                return Response::json(array('error' => '1'));
+            }
+        }
+        else{
+            return Response::json(array('error' => '3'));
+        }
+
+    }
