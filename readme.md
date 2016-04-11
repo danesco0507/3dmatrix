@@ -8,7 +8,7 @@ El actual repositorio contiene un proyecto desarrollado en Laravel, en el cual s
 
 El programa usa como estructura de datos un array de php, pues está implementado como hash table y el acceso a sus elementos se hace en O(1). La matriz se inicia con todos sus valores en 0, usando un algoritmo de 3 loops anidados que tiene un orden O(n^3) y para obtener la suma se procesa de la misma forma.
 
-Usé Laravel pues no estoy muy familiarizado con el framework ni con el lenguaje y decidí aprender al menos para realizar el ejercicio.
+Usé Laravel pues no estoy muy familiarizado con el framework ni con el lenguaje y decidí aprender al menos para realizar el ejercicio. No se usa la capa de modelo, pues no se modelan datos para la aplicación. Puede encontrar una instancia de la aplicación funcionando correctamente en [este link](https://dfea3dmatrix.herokuapp.com/), los datos pueden ser ingresados en el área de texto como son mostrados en el link del ejecricio.
 
 ### VISTA
 * El archivo ~/resources/views/basicform.blade.php es un template que contiene un formulario con un área de texto y un botón con el propósito de resivir los datos del usuario y de los casos de prueba. Sus responsabilidades son:
@@ -36,7 +36,7 @@ El archivo ~/app/Http/routes.php únicamente tiene dos enrutadores a las uri '/'
 
 En el archivo code_refactoring.txt de la raiz de este repositorio se encuentra la refactorización del código indicado en el ejercicio.
 
-Lo primero que se puede notar es que el código entregado es dificil de leer, pues no se encuentra documentación de lo que se hace en el método. En la refactorización que hice, me aseguré de indicar de que se trata cada paso lo cual facilita el mantenimiento del código.
+Lo primero que se puede notar es que el código entregado es dificil de leer, pues no se encuentra documentación de lo que se hace en el método. En la refactorización que hice, me aseguré de indicar de que se trata cada paso, lo cual facilita el mantenimiento del código.
 
 Por otro lado se hacen muchas consultas similares a los datos que llegan por post, por ejemplo cuando se hace 
 
@@ -44,9 +44,9 @@ Input::get('driver_id')
 
 En la refactorización se hace un solo llamado al parametro y se hace un solo llamado a la base de datos para obtener los registros del servicio y del conductor (salvo update), esto facilita el entendimiento del código y evita llamados inecesarios a la base de datos como se hace cuando se actualiza el valor del id del carro en el servicio.
 
-También se hizo una corrección sobre los if que verifican el estatus del servicio y se cambia el segundo por un elseif, esto se hace por buenas practicas aun que no afecta mucho en el funcionaminto en este caso especifico (ya que existenclausulas return en cada bloque condicional.
+También se hizo una corrección sobre los "if" que verifican el estatus del servicio y se cambia el segundo por un "elseif", esto se hace por buenas practicas aun que no afecta mucho en el funcionaminto en este caso especifico (ya que existenclausulas return en cada bloque condicional.
 
-Por último se cambia el retorno en caso de que el envío de la notificación sea exitoso, de lo contrario no es posible identificar en un caso de pruebas si el envío es exitoso o no se encontro un "uuid" para el usuario, lo cual tiene implicaciones distintas pero se está manejando igual. El código que se encuentra bajo comentarios se elimina para mejorar la facilidad de lectura del código.
+Por último se cambia el retorno en caso de que el envío de la notificación sea exitoso, de lo contrario no es posible identificar en un caso de pruebas si el envío es exitoso o no se encontro un "uuid" para el usuario, lo cual tiene implicaciones distintas pero se está manejando igual. El código que se encuentra bajo comentarios fue eliminado para mejorar la facilidad de lectura del código.
 
 
 ##PREGUNTAS
